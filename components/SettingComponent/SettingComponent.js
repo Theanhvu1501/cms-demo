@@ -7,6 +7,7 @@ import {
   Form,
   Input,
   Row,
+  Select,
   Space,
   Upload,
   message,
@@ -19,6 +20,8 @@ const SettingComponent = () => {
   const [dataExcel, setDataExcel] = useState();
   const [color, setColor] = useState();
   const [logo, setLogo] = useState();
+
+  const { Option } = Select
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,6 +93,19 @@ const SettingComponent = () => {
     }
   };
 
+  const options = [
+    {
+      label: "zh_CN", value: "zh_CN"
+    },
+    {
+      label: "en_EN", value: "en_EN"
+    }, {
+      label: "vi_VN", value: "vi_VN"
+    },
+    {
+      label: "pt_PT", value: "pt_PT"
+    }
+  ]
   return (
     <Form layout="vertical" form={form} onFinish={() => save()}>
       <Row gutter={[32]}>
@@ -98,7 +114,9 @@ const SettingComponent = () => {
             <Input placeholder="Nhập title" />
           </Form.Item>
           <Form.Item name="lang" label="Language">
-            <Input placeholder="Nhập language" />
+            <Select placeholder="Nhập language">
+              {options.map(item => <Option value={item.value}>{item.label}</Option>)}
+            </Select>
           </Form.Item>
           {/* <Form.Item name="languageDictionary" label="Language">
             <Upload
@@ -120,6 +138,7 @@ const SettingComponent = () => {
               className="mr-[20px]"
               showText
               value={color}
+              defaultValue={color}
             />
             ( <i>Chọn màu chủ đạo</i> )
           </Form.Item>
