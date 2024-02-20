@@ -1,4 +1,5 @@
-import { ImportOutlined, UploadOutlined } from '@ant-design/icons';
+1;
+import { UploadOutlined } from "@ant-design/icons";
 import {
   Button,
   Col,
@@ -8,38 +9,87 @@ import {
   Row,
   Space,
   Upload,
-} from 'antd';
-import axios from 'axios';
-import { useState } from 'react';
+  message,
+} from "antd";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 const SettingComponent = () => {
   const [form] = Form.useForm();
   const [dataExcel, setDataExcel] = useState();
   const [color, setColor] = useState();
+  const [logo, setLogo] = useState();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await axios.get(
+          "https://ap-southeast-bet-dm.chaien.vn/api/v1/setting"
+        );
+        const result = data.data;
+        if (result) {
+          form.setFieldValue("title", result.title);
+          form.setFieldValue("lang", result.lang);
+          form.setFieldValue("logo", result.logo);
+          form.setFieldValue("color", result.color);
+          setColor(result.color);
+          setLogo({
+            logo: result.logo,
+            logoUrl: result.logoUrl,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const save = async () => {
     const values = form.getFieldsValue();
+    console.log(values);
+    const file = values.logo.file.originFileObj;
+    const formData = new FormData();
+    formData.append("file", file);
+    const headers = { internalkey: "public" };
+    const { data: dataImage } = await axios.post(
+      "https://content.chaien.vn/api/storage/public/write",
+      formData,
+      { headers }
+    );
+    console.log("dataImage", dataImage);
+
+    const body = {
+      title: values.title,
+      color: color,
+      logo: dataImage.data,
+      lang: values.lang,
+      id: "1209075439708930048",
+    };
+    axios
+      .put("https://ap-southeast-bet-dm.chaien.vn/api/v1/setting", body, {
+        headers,
+      })
+      .then(() => message.success("Thành công"))
+      .catch((e) => console.log(e));
   };
+
   const handleImport = async (file) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
     try {
       const { data: data } = await axios.post(
-        'https://ap-southeast-bet-dm.chaien.vn/api/v1/setting/read-excel',
+        "https://ap-southeast-bet-dm.chaien.vn/api/v1/setting/read-excel",
         formData
       );
-      console.log('temp :>> ', data.data);
+      console.log("temp :>> ", data.data);
       setDataExcel(data.data);
+      message.success("Import thành công!");
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleImportImage = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    console.log('formData :>> ', formData);
-  };
   return (
     <Form layout="vertical" form={form} onFinish={() => save()}>
       <Row gutter={[32]}>
@@ -50,7 +100,7 @@ const SettingComponent = () => {
           <Form.Item name="lang" label="Language">
             <Input placeholder="Nhập language" />
           </Form.Item>
-          <Form.Item name="languageDictionary" label="Language">
+          {/* <Form.Item name="languageDictionary" label="Language">
             <Upload
               accept=".xlsx, .xls"
               maxCount={1}
@@ -61,22 +111,30 @@ const SettingComponent = () => {
             >
               <Button icon={<ImportOutlined />}>Import Upload</Button>
             </Upload>
-          </Form.Item>
+          </Form.Item> */}
         </Col>
         <Col span={12}>
-          <Form.Item name="logo" label="Logo">
-            <Upload>
-              <Button icon={<UploadOutlined />}>Click to Upload</Button>
-            </Upload>
-          </Form.Item>
           <Form.Item name="color" label="Color">
             <ColorPicker
               onChange={(value) => setColor(value.toHexString())}
               className="mr-[20px]"
               showText
+              value={color}
             />
             ( <i>Chọn màu chủ đạo</i> )
           </Form.Item>
+          <Form.Item name="logo" label="Logo">
+            <Upload>
+              <Button icon={<UploadOutlined />}>Click to Upload</Button>
+            </Upload>
+          </Form.Item>
+          <a
+            hidden={form.getFieldValue("logo")?.fileList?.length > 0}
+            href={logo?.logoUrl}
+            target="_blank"
+          >
+            {logo?.logo}
+          </a>
         </Col>
       </Row>
       <div className="text-center">
