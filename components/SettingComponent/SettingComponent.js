@@ -115,7 +115,7 @@ const SettingComponent = () => {
           </Form.Item>
           <Form.Item name="lang" label="Language">
             <Select placeholder="Nhập language">
-              {options.map(item => <Option value={item.value}>{item.label}</Option>)}
+              {options.map(item => <Option key={item.value} value={item.value}>{item.label}</Option>)}
             </Select>
           </Form.Item>
           {/* <Form.Item name="languageDictionary" label="Language">
