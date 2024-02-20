@@ -50,25 +50,31 @@ const SettingComponent = () => {
 
   const save = async () => {
     const values = form.getFieldsValue();
-    console.log(values);
-    const file = values.logo.file.originFileObj;
+    const file = values.logo?.file?.originFileObj;
     const formData = new FormData();
-    formData.append("file", file);
+    let dataImage
     const headers = { internalkey: "public" };
-    const { data: dataImage } = await axios.post(
-      "https://content.chaien.vn/api/storage/public/write",
-      formData,
-      { headers }
-    );
-    console.log("dataImage", dataImage);
+    if (file) {
+      formData.append("file", file);
+      const { data } = await axios.post(
+        "https://content.chaien.vn/api/storage/public/write",
+        formData,
+        { headers }
+      );
+      dataImage = data
+    }
+
 
     const body = {
       title: values.title,
       color: color,
-      logo: dataImage.data,
+      logo: logo.logo,
       lang: values.lang,
       id: "1209075439708930048",
     };
+    if (dataImage) {
+      body.logo = dataImage.data
+    }
     axios
       .put("https://ap-southeast-bet-dm.chaien.vn/api/v1/setting", body, {
         headers,
